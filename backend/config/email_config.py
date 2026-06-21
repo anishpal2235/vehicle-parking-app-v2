@@ -4,9 +4,9 @@
 # SMTP Server Settings
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
-SMTP_USERNAME = 'palanish12@gmail.com'  # Replace with your email
-SMTP_PASSWORD = 'bqek vseb eqls osiu'  # Replace with your app password
-SENDER_EMAIL = 'Parking App <palanish12@gmail.com>'  # Replace with your preferred sender name
+SMTP_USERNAME = ''  # Replace with your email
+SMTP_PASSWORD = ''  # Replace with your app password
+SENDER_EMAIL = 'Parking App <>'  # Replace with your preferred sender name
 
 
 # Note for Gmail users:
