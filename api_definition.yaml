@@ -1,0 +1,175 @@
+openapi: 3.0.0
+info:
+  title: Vehicle Parking Management System API
+  description: RESTful API for managing vehicle parking lots, reservations, and users
+  version: 1.0.0
+  contact:
+    name: Parking App Support
+    email: support@parkingapp.com
+
+servers:
+  - url: http://localhost:5000
+    description: Development server
+  - url: https://your-app-name.render.com
+    description: Production server
+
+paths:
+  /api/available-spots/{lot_id}:
+    get:
+      summary: Get available parking spots for a specific lot
+      parameters:
+        - name: lot_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the parking lot
+      responses:
+        '200':
+          description: List of available spots
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  lot_id:
+                    type: integer
+                  spots:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        spot_number:
+                          type: string
+                        status:
+                          type: string
+                  count:
+                    type: integer
+        '401':
+          description: Unauthorized
+        '404':
+          description: Parking lot not found
+
+  /api/user-stats:
+    get:
+      summary: Get statistics for the current user
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: User statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  active_reservations:
+                    type: integer
+                  past_reservations:
+                    type: integer
+                  total_spent:
+                    type: number
+                  monthly_spending:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        month:
+                          type: string
+                        amount:
+                          type: number
+        '401':
+          description: Unauthorized
+
+  /api/parking-stats:
+    get:
+      summary: Get parking lot statistics (admin only)
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Parking lot statistics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    total:
+                      type: integer
+                    available:
+                      type: integer
+                    occupied:
+                      type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin access required
+
+  /user/book-spot:
+    post:
+      summary: Book a parking spot
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                lot_id:
+                  type: integer
+                vehicle_no:
+                  type: string
+                spot_id:
+                  type: integer
+      responses:
+        '200':
+          description: Spot booked successfully
+        '400':
+          description: Invalid request data
+        '401':
+          description: Unauthorized
+
+  /user/release-spot/{reservation_id}:
+    post:
+      summary: Release a parking reservation
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: reservation_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Spot released successfully
+        '401':
+          description: Unauthorized
+        '404':
+          description: Reservation not found
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
+
+tags:
+  - name: Spots
+    description: Parking spot management
+  - name: Users
+    description: User management and statistics
+  - name: Admin
+    description: Administrative operations
+

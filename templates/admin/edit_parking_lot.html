@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Parking Lot - {{ lot.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Edit Parking Lot: {{ lot.name }}</h2>
+            <a href="{{ url_for('admin.parking_lots') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Lots
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Parking Lot Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.edit_parking_lot', lot_id=lot.id) }}">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Lot Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ lot.name }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="prime_location_name" class="form-label">Prime Location Name</label>
+                            <input type="text" class="form-control" id="prime_location_name" name="prime_location_name" value="{{ lot.prime_location_name }}" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="price" class="form-label">Price Per Hour ($)</label>
+                            <input type="number" step="0.01" class="form-control" id="price" name="price" value="{{ lot.price }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="max_spots" class="form-label">Maximum Number of Spots</label>
+                            <input type="number" class="form-control" id="max_spots" name="max_spots" value="{{ lot.maximum_number_of_spots }}" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea class="form-control" id="address" name="address" rows="3" required>{{ lot.address }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pin_code" class="form-label">PIN Code</label>
+                        <input type="text" class="form-control" id="pin_code" name="pin_code" value="{{ lot.pin_code }}" required>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Parking Lot
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

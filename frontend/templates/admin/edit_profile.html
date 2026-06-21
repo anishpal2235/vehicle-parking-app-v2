@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Profile{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Admin Profile</h2>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Personal Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.edit_profile') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ admin.username }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ admin.email }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Update Profile
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0">Change Password</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.change_password') }}">
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="current_password" name="current_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                    </div>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-key"></i> Change Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">System Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Total Users</h6>
+                                <h3 class="card-text">{{ User.query.filter_by(is_admin=False).count() }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Total Parking Lots</h6>
+                                <h3 class="card-text">{{ ParkingLot.query.count() }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Account Type</h6>
+                                <h3 class="card-text">Administrator</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Member Since</h6>
+                                <h3 class="card-text" style="font-size: 1.2rem;">{{ admin.created_at.strftime('%b %d, %Y') }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Book Parking Spot{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="mb-4">Book the parking spot</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5>Booking Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('user.confirm_booking') }}">
+                    <input type="hidden" name="lot_id" value="{{ lot.id }}">
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="spot_id" class="form-label"><strong>Choose Spot:</strong></label>
+                        </div>
+                        <div class="col-md-8">
+                            <select class="form-select" id="spot_id" name="spot_id" required>
+                                <option value="">Select a parking spot...</option>
+                                {% for spot in available_spots %}
+                                <option value="{{ spot.id }}">Spot #{{ spot.spot_number }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Lot ID:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ lot.name }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Location:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ lot.address }}, {{ lot.prime_location_name }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Price/Hour:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            ${{ lot.price }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>User:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ current_user.username }}
+                            <input type="hidden" name="user_id" value="{{ current_user.id }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="vehicle_no" class="form-label"><strong>Vehicle Number:</strong></label>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="text" class="form-control" id="vehicle_no" name="vehicle_no" 
+                                  value="{{ current_user.vehicle_no or '' }}" required
+                                  placeholder="Format: AB12CD3456"
+                                  pattern="[A-Za-z]{2}[0-9]{2}[A-Za-z]{2}[0-9]{4}"
+                                  title="Vehicle number must be in the format: AB12CD3456 (2 letters, 2 numbers, 2 letters, 4 numbers)">
+                            <small class="form-text text-muted">Format: 2 letters, 2 numbers, 2 letters, 4 numbers (e.g., AB12CD3456)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="booking_time" class="form-label"><strong>Booking Time:</strong></label>
+                        </div>
+                        <div class="col-md-8">
+                            {{ now.strftime('%d %b %Y, %I:%M %p') }}
+                            <input type="hidden" name="booking_time" value="{{ now }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="d-flex justify-content-center gap-3">
+                                <button type="submit" class="btn btn-primary btn-lg px-5">
+                                    <i class="fas fa-check"></i> Reserve
+                                </button>
+                                <a href="{{ url_for('user.search_parking') }}?location={{ lot.prime_location_name }}" class="btn btn-secondary btn-lg px-5">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Visual Spot Selection -->
+<div class="row mt-4">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5>Available Parking Spots</h5>
+            </div>
+            <div class="card-body">
+                <div class="parking-layout mb-3">
+                    <div class="row g-2">
+                        {% for spot in available_spots %}
+                        <div class="col-md-2 col-sm-3 col-4">
+                            <div class="spot-item available" onclick="selectSpot({{ spot.id }}, {{ spot.spot_number }})">
+                                <div class="spot-number">{{ spot.spot_number }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="text-center">
+                    <small class="text-muted">Click on a spot to select it</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .parking-layout {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+    }
+    
+    .spot-item {
+        background-color: #28a745;
+        color: white;
+        border-radius: 5px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .spot-item:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    
+    .spot-item.available {
+        background-color: #28a745;
+    }
+    
+    .spot-item.selected {
+        background-color: #007bff;
+        border: 2px solid #0056b3;
+    }
+    
+    .spot-number {
+        font-weight: bold;
+        font-size: 18px;
+    }
+</style>
+
+<script>
+    function selectSpot(spotId, spotNumber) {
+        // Update the select dropdown
+        document.getElementById('spot_id').value = spotId;
+        
+        // Update visual selection
+        const spotItems = document.querySelectorAll('.spot-item');
+        spotItems.forEach(item => {
+            item.classList.remove('selected');
+            item.classList.add('available');
+        });
+        
+        // Highlight the selected spot
+        event.currentTarget.classList.remove('available');
+        event.currentTarget.classList.add('selected');
+    }
+    
+    // When dropdown selection changes, update the visual selection
+    document.getElementById('spot_id').addEventListener('change', function() {
+        const spotId = this.value;
+        const spotItems = document.querySelectorAll('.spot-item');
+        
+        spotItems.forEach(item => {
+            item.classList.remove('selected');
+            item.classList.add('available');
+        });
+        
+        if (spotId) {
+            // Find the corresponding visual element and select it
+            const selectedSpotItem = document.querySelector(`.spot-item[onclick*="selectSpot(${spotId},"]`);
+            if (selectedSpotItem) {
+                selectedSpotItem.classList.remove('available');
+                selectedSpotItem.classList.add('selected');
+            }
+        }
+    });
+</script>
+{% endblock %} 

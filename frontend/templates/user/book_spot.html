@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+
+{% block title %}Book a Parking Spot{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Book a Parking Spot</h2>
+            <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5>Booking Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('user.book_spot') }}">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="lot_id" class="form-label"><strong>Select Parking Lot:</strong></label>
+                        </div>
+                        <div class="col-md-8">
+                            <select class="form-select" id="lot_id" name="lot_id" required>
+                                <option value="">Choose a parking lot...</option>
+                                {% for lot in available_lots %}
+                                <option value="{{ lot.id }}" data-price="{{ lot.price }}" data-location="{{ lot.prime_location_name }}" data-address="{{ lot.address }}">
+                                    {{ lot.name }} - ${{ lot.price }}/hour ({{ lot.available_spots }} spots available)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3" id="lot_details" style="display: none;">
+                        <div class="col-md-4">
+                            <strong>Location:</strong>
+                        </div>
+                        <div class="col-md-8" id="lot_location">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3" id="address_details" style="display: none;">
+                        <div class="col-md-4">
+                            <strong>Address:</strong>
+                        </div>
+                        <div class="col-md-8" id="lot_address">
+                        </div>
+                    </div>
+                    
+                    <div id="spot_selection_container" class="row mb-3" style="display: none;">
+                        <div class="col-md-4">
+                            <label for="spot_id" class="form-label"><strong>Choose Spot:</strong></label>
+                        </div>
+                        <div class="col-md-8">
+                            <select class="form-select" id="spot_id" name="spot_id" required>
+                                <option value="">Select a parking spot...</option>
+                                <!-- Spots will be loaded dynamically -->
+                            </select>
+                            <div class="form-text">Choose a specific spot or let the system assign one for you.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>User:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ current_user.username }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="vehicle_no" class="form-label"><strong>Vehicle Number:</strong></label>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="text" class="form-control" id="vehicle_no" name="vehicle_no" 
+                                  value="{{ current_user.vehicle_no or '' }}" required
+                                  placeholder="Format: AB12CD3456"
+                                  pattern="[A-Za-z]{2}[0-9]{2}[A-Za-z]{2}[0-9]{4}"
+                                  title="Vehicle number must be in the format: AB12CD3456 (2 letters, 2 numbers, 2 letters, 4 numbers)">
+                            <small class="form-text text-muted">Format: 2 letters, 2 numbers, 2 letters, 4 numbers (e.g., AB12CD3456)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Booking Time:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ current_time.strftime('%d %b %Y, %I:%M %p') }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label"><strong>Estimated Cost:</strong></label>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="text" class="form-control" id="estimated_cost" readonly placeholder="0.00">
+                                <span class="input-group-text">per hour</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="d-flex justify-content-center gap-3">
+                                <button type="submit" class="btn btn-primary btn-lg px-5">
+                                    <i class="fas fa-check"></i> Reserve
+                                </button>
+                                <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary btn-lg px-5">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Available Parking Lots</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for lot in available_lots %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ lot.name }}</h5>
+                                <p class="card-text">
+                                    <i class="fas fa-map-marker-alt"></i> {{ lot.prime_location_name }}<br>
+                                    <i class="fas fa-dollar-sign"></i> ${{ lot.price }}/hour<br>
+                                    <i class="fas fa-parking"></i> {{ lot.available_spots }} spots available
+                                </p>
+                                <a href="#" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#lotModal{{ lot.id }}">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Lot Details Modal -->
+                        <div class="modal fade" id="lotModal{{ lot.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">{{ lot.name }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p><strong>Location:</strong> {{ lot.prime_location_name }}</p>
+                                        <p><strong>Address:</strong> {{ lot.address }}</p>
+                                        <p><strong>PIN Code:</strong> {{ lot.pin_code }}</p>
+                                        <p><strong>Price:</strong> ${{ lot.price }}/hour</p>
+                                        <p><strong>Available Spots:</strong> {{ lot.available_spots }}</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Store API endpoint URL from Flask's url_for
+    const apiUrlTemplate = "{{ url_for('user.available_spots_api', lot_id=0) }}".replace('0', '');
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const lotSelect = document.getElementById('lot_id');
+        const estimatedCost = document.getElementById('estimated_cost');
+        const lotDetails = document.getElementById('lot_details');
+        const lotLocation = document.getElementById('lot_location');
+        const addressDetails = document.getElementById('address_details');
+        const lotAddress = document.getElementById('lot_address');
+        const spotSelectionContainer = document.getElementById('spot_selection_container');
+        const spotSelect = document.getElementById('spot_id');
+        
+        lotSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (this.value) {
+                const price = selectedOption.dataset.price || '0';
+                const location = selectedOption.dataset.location || '';
+                const address = selectedOption.dataset.address || '';
+                
+                estimatedCost.value = price;
+                lotLocation.textContent = location;
+                lotAddress.textContent = address;
+                
+                lotDetails.style.display = 'flex';
+                addressDetails.style.display = 'flex';
+                
+                // Load available spots for the selected lot
+                loadAvailableSpots(this.value);
+            } else {
+                lotDetails.style.display = 'none';
+                addressDetails.style.display = 'none';
+                spotSelectionContainer.style.display = 'none';
+                estimatedCost.value = '';
+            }
+        });
+        
+        // Function to load available spots for a selected lot
+        function loadAvailableSpots(lotId) {
+            // Clear existing options except the placeholder
+            while (spotSelect.options.length > 1) {
+                spotSelect.remove(1);
+            }
+            
+            // Show loading indicator
+            spotSelect.disabled = true;
+            spotSelectionContainer.style.display = 'flex';
+            
+            // Fetch available spots via AJAX
+            fetch(apiUrlTemplate + lotId)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    spotSelect.disabled = false;
+                    
+                    if (data.spots && data.spots.length > 0) {
+                        // Add each spot to the dropdown
+                        data.spots.forEach(spot => {
+                            const option = document.createElement('option');
+                            option.value = spot.id;
+                            option.textContent = `Spot #${spot.spot_number}`;
+                            spotSelect.appendChild(option);
+                        });
+                        
+                        // Create spot visualization
+                        createSpotVisualization(data.spots);
+                    } else {
+                        // No spots available
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = 'No spots available';
+                        option.disabled = true;
+                        spotSelect.appendChild(option);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching spots:', error);
+                    spotSelect.disabled = false;
+                    
+                    // Show error message
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'Error loading spots';
+                    option.disabled = true;
+                    spotSelect.appendChild(option);
+                });
+        }
+        
+        // Function to create spot visualization
+        function createSpotVisualization(spots) {
+            // Create visual spot selector if it doesn't exist
+            let visualContainer = document.getElementById('visual_spot_container');
+            
+            if (!visualContainer) {
+                visualContainer = document.createElement('div');
+                visualContainer.id = 'visual_spot_container';
+                visualContainer.className = 'mt-3 p-3 border rounded bg-light';
+                
+                const heading = document.createElement('h6');
+                heading.className = 'mb-3';
+                heading.textContent = 'Available Spots:';
+                visualContainer.appendChild(heading);
+                
+                const spotsContainer = document.createElement('div');
+                spotsContainer.id = 'spots_grid';
+                spotsContainer.className = 'row g-2';
+                visualContainer.appendChild(spotsContainer);
+                
+                spotSelect.parentNode.appendChild(visualContainer);
+            }
+            
+            // Clear existing spots
+            const spotsGrid = document.getElementById('spots_grid');
+            spotsGrid.innerHTML = '';
+            
+            // Add spots to grid
+            spots.forEach(spot => {
+                const spotItem = document.createElement('div');
+                spotItem.className = 'col-md-2 col-sm-3 col-4 mb-2';
+                
+                const spotButton = document.createElement('button');
+                spotButton.type = 'button';
+                spotButton.className = 'btn btn-success w-100 spot-button';
+                spotButton.dataset.spotId = spot.id;
+                spotButton.textContent = spot.spot_number;
+                spotButton.style.height = '50px';
+                
+                // Add click event to select this spot
+                spotButton.addEventListener('click', function(event) {
+                    // Update dropdown selection
+                    spotSelect.value = spot.id;
+                    
+                    // Update visual selection
+                    document.querySelectorAll('.spot-button').forEach(btn => {
+                        btn.classList.remove('btn-primary');
+                        btn.classList.add('btn-success');
+                    });
+                    
+                    this.classList.remove('btn-success');
+                    this.classList.add('btn-primary');
+                });
+                
+                spotItem.appendChild(spotButton);
+                spotsGrid.appendChild(spotItem);
+            });
+        }
+        
+        // Handle spot selection from dropdown
+        spotSelect.addEventListener('change', function() {
+            const spotId = this.value;
+            
+            // Update visual selection if it exists
+            const spotButtons = document.querySelectorAll('.spot-button');
+            if (spotButtons.length > 0) {
+                spotButtons.forEach(btn => {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-success');
+                    
+                    if (btn.dataset.spotId === spotId) {
+                        btn.classList.remove('btn-success');
+                        btn.classList.add('btn-primary');
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %} 

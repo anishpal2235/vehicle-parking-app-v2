@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Occupied Parking Spot Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.parking_lots') }}">Parking Lots</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.view_parking_spots', lot_id=lot.id) }}">{{ lot.name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin.view_parking_spot', spot_id=spot.id) }}">Spot #{{ spot.spot_number }}</a></li>
+                    <li class="breadcrumb-item active">Occupied Spot Details</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Occupied Parking Spot Details</h5>
+                    <span class="badge bg-light text-danger">OCCUPIED</span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <div class="spot-block" style="
+                                        width: 100px;
+                                        height: 100px;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        background-color: #dc3545;
+                                        color: white;
+                                        font-size: 42px;
+                                        font-weight: bold;
+                                        border-radius: 8px;">
+                                        O
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-4">
+                                    <h3>Spot #{{ spot.spot_number }}</h3>
+                                    <h5 class="text-muted">{{ lot.name }}</h5>
+                                    <p class="mb-0">{{ lot.prime_location_name }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body p-4">
+                                    <h5 class="mb-3">Current Reservation Details</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <dl class="row mb-0">
+                                                <dt class="col-sm-5">Spot ID:</dt>
+                                                <dd class="col-sm-7">{{ spot.id }}</dd>
+                                                
+                                                <dt class="col-sm-5">Customer ID:</dt>
+                                                <dd class="col-sm-7">{{ sequential_id }}</dd>
+                                                
+                                                <dt class="col-sm-5">Customer Name:</dt>
+                                                <dd class="col-sm-7">{{ user.full_name or user.username }}</dd>
+                                                
+                                                <dt class="col-sm-5">Vehicle Number:</dt>
+                                                <dd class="col-sm-7">
+                                                    {% if reservation.vehicle_no %}
+                                                        {{ reservation.vehicle_no }}
+                                                    {% elif user.vehicle_no %}
+                                                        {{ user.vehicle_no }} <small class="text-muted">(from profile)</small>
+                                                    {% else %}
+                                                        <span class="text-muted">Not recorded</span>
+                                                    {% endif %}
+                                                </dd>
+                                            </dl>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <dl class="row mb-0">
+                                                <dt class="col-sm-5">Parking Time:</dt>
+                                                <dd class="col-sm-7">{{ reservation.parking_timestamp }}</dd>
+                                                
+                                                <dt class="col-sm-5">Duration:</dt>
+                                                <dd class="col-sm-7">{{ reservation.duration }}</dd>
+                                                
+                                                <dt class="col-sm-5">Hourly Rate:</dt>
+                                                <dd class="col-sm-7">${{ lot.price }}/hour</dd>
+                                                
+                                                <dt class="col-sm-5">Est. Cost:</dt>
+                                                <dd class="col-sm-7 fw-bold text-danger">${{ estimated_cost }}</dd>
+                                            </dl>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card bg-light border-0">
+                                <div class="card-body p-4">
+                                    <h5 class="mb-3">Customer Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <dl class="row mb-0">
+                                                <dt class="col-sm-4">Full Name:</dt>
+                                                <dd class="col-sm-8">{{ user.full_name or user.username }}</dd>
+                                                
+                                                <dt class="col-sm-4">Email:</dt>
+                                                <dd class="col-sm-8">{{ user.email }}</dd>
+                                                
+                                                <dt class="col-sm-4">Phone:</dt>
+                                                <dd class="col-sm-8">
+                                                    {% if user.phone %}
+                                                        {{ user.phone }}
+                                                    {% else %}
+                                                        <span class="text-muted">Not provided</span>
+                                                    {% endif %}
+                                                </dd>
+                                                
+                                                <dt class="col-sm-4">Vehicle:</dt>
+                                                <dd class="col-sm-8">
+                                                    {% if user.vehicle_no %}
+                                                        {{ user.vehicle_no }}
+                                                    {% else %}
+                                                        <span class="text-muted">Not provided</span>
+                                                    {% endif %}
+                                                </dd>
+                                            </dl>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <dl class="row mb-0">
+                                                <dt class="col-sm-4">Address:</dt>
+                                                <dd class="col-sm-8">
+                                                    {% if user.address %}
+                                                        {{ user.address }}
+                                                    {% else %}
+                                                        <span class="text-muted">Not provided</span>
+                                                    {% endif %}
+                                                </dd>
+                                                
+                                                <dt class="col-sm-4">PIN Code:</dt>
+                                                <dd class="col-sm-8">
+                                                    {% if user.pin_code %}
+                                                        {{ user.pin_code }}
+                                                    {% else %}
+                                                        <span class="text-muted">Not provided</span>
+                                                    {% endif %}
+                                                </dd>
+                                                
+                                                <dt class="col-sm-4">User Since:</dt>
+                                                <dd class="col-sm-8">{{ user.created_at }}</dd>
+                                            </dl>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="d-flex">
+                                <a href="{{ url_for('admin.view_parking_spot', spot_id=spot.id) }}" class="btn btn-secondary me-2">
+                                    <i class="fas fa-arrow-left me-1"></i> Back to Spot
+                                </a>
+                                <a href="{{ url_for('admin.force_release_spot', spot_id=spot.id) }}" class="btn btn-warning me-2" 
+                                   onclick="return confirm('Are you sure you want to force release this spot? This will end the current reservation and charge the user.');">
+                                    <i class="fas fa-unlock me-1"></i> Force Release
+                                </a>
+                                <a href="{{ url_for('admin.view_users') }}" class="btn btn-info">
+                                    <i class="fas fa-user me-1"></i> View All Users
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

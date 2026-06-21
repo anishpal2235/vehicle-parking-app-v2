@@ -1,0 +1,3 @@
+# Parking Management System Requirements
+# Install backend dependencies
+-r backend/requirements.txt

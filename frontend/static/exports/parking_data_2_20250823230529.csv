@@ -1,0 +1,2 @@
+reservation_id,parking_lot,spot_number,vehicle_number,parking_time,leaving_time,duration,cost,status
+1,Bombay Parking,10,MP04XS0222,2025-08-23 22:52:22,2025-08-23 22:53:17,0m,0.023290623750000003,Completed

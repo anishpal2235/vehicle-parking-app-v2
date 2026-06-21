@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Parking Lots{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Manage Parking Lots</h2>
+            <a href="{{ url_for('admin.create_parking_lot') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Lot
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Location</th>
+                                <th>Total Spots</th>
+                                <th>Available Spots</th>
+                                <th>Price/Hour</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lot in parking_lots %}
+                            <tr>
+                                <td>{{ lot.name }}</td>
+                                <td>{{ lot.prime_location_name }}</td>
+                                <td>{{ lot.maximum_number_of_spots }}</td>
+                                <td>{{ lot.available_spots }}</td>
+                                <td>${{ lot.price }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('admin.edit_parking_lot', lot_id=lot.id) }}" 
+                                           class="btn btn-sm btn-info" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin.view_parking_spots', lot_id=lot.id) }}" 
+                                           class="btn btn-sm btn-success" title="View Spots">
+                                            <i class="fas fa-list"></i>
+                                        </a>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-danger" 
+                                                title="Delete"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#deleteModal{{ lot.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Delete Confirmation Modal -->
+                                    <div class="modal fade" id="deleteModal{{ lot.id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Confirm Delete</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to delete the parking lot "{{ lot.name }}"?</p>
+                                                    <p class="text-danger">This action cannot be undone.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <a href="{{ url_for('admin.delete_parking_lot', lot_id=lot.id) }}" 
+                                                       class="btn btn-danger">Delete</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

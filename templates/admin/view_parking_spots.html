@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}View Parking Spots{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Parking Spots - {{ lot.name }}</h2>
+            <a href="{{ url_for('admin.parking_lots') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Lots
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Spot Number</th>
+                                <th>Status</th>
+                                <th>Current User</th>
+                                <th>Start Time</th>
+                                <th>Duration</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for spot in spots %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('admin.view_parking_spot', spot_id=spot.id) }}">
+                                        {{ spot.spot_number }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge {% if spot.status == 'A' %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if spot.status == 'A' %}
+                                        Available
+                                        {% else %}
+                                        <a href="{{ url_for('admin.view_occupied_spot', spot_id=spot.id) }}" class="text-white" style="text-decoration: none;">
+                                            Occupied
+                                        </a>
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if spot.status == 'O' and spot.current_reservation %}
+                                        {{ spot.current_reservation.user.username }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if spot.status == 'O' and spot.current_reservation %}
+                                        {{ spot.current_reservation.parking_timestamp }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if spot.status == 'O' and spot.current_reservation %}
+                                        {{ spot.current_reservation.duration }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if spot.status == 'O' %}
+                                    <a href="{{ url_for('admin.view_occupied_spot', spot_id=spot.id) }}" class="btn btn-sm btn-info me-1">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-warning" 
+                                            title="Force Release"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#releaseModal{{ spot.id }}">
+                                        <i class="fas fa-unlock"></i>
+                                    </button>
+                                    
+                                    <!-- Force Release Modal -->
+                                    <div class="modal fade" id="releaseModal{{ spot.id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Force Release Spot</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to force release spot #{{ spot.spot_number }}?</p>
+                                                    <p class="text-warning">This will end the current reservation and charge the user.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <a href="{{ url_for('admin.force_release_spot', spot_id=spot.id) }}" 
+                                                       class="btn btn-warning">Force Release</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if spot.status == 'A' %}
+                                    <a href="{{ url_for('admin.view_parking_spot', spot_id=spot.id) }}" class="btn btn-sm btn-info me-1">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('admin.delete_parking_spot', spot_id=spot.id) }}" 
+                                       class="btn btn-sm btn-danger"
+                                       onclick="return confirm('Are you sure you want to delete spot #{{ spot.spot_number }}?');">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Spot Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Spots</h5>
+                                <h2 class="card-text">{{ total_spots }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Available Spots</h5>
+                                <h2 class="card-text">{{ available_spots }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">Occupied Spots</h5>
+                                <h2 class="card-text">{{ occupied_spots }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

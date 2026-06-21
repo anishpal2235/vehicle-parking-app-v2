@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Manage Users</h2>
+            <div class="input-group" style="max-width: 300px;">
+                <input type="text" class="form-control" id="userSearchInput" placeholder="Search users...">
+                <button class="btn btn-outline-secondary" type="button" title="Search users">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0">User Management</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle mb-0" id="usersTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center" style="width: 5%;">#</th>
+                                <th style="width: 15%;">Full Name</th>
+                                <th style="width: 20%;">Email</th>
+                                <th style="width: 20%;">Address</th>
+                                <th style="width: 8%;">PIN Code</th>
+                                <th class="text-center" style="width: 8%;">Active</th>
+                                <th class="text-center" style="width: 8%;">Bookings</th>
+                                <th class="text-end" style="width: 8%;">Spent</th>
+                                <th class="text-center" style="width: 8%;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td class="text-center fw-bold">{{ loop.index }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-primary text-white">{{ (user.full_name or user.username)[0].upper() }}</div>
+                                        <div class="ms-2">{{ user.full_name or user.username }}</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 200px;" title="{{ user.email }}">
+                                        {{ user.email }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 200px;" title="{{ user.address or 'N/A' }}">
+                                        {{ user.address or 'N/A' }}
+                                    </div>
+                                </td>
+                                <td>{{ user.pin_code or 'N/A' }}</td>
+                                <td class="text-center">
+                                    <span class="badge bg-{{ 'success' if user.active_reservations > 0 else 'secondary' }} rounded-pill">
+                                        {{ user.active_reservations }}
+                                    </span>
+                                </td>
+                                <td class="text-center">{{ user.total_bookings }}</td>
+                                <td class="text-end">${{ user.total_spent }}</td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-info" 
+                                                title="View Details"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#userModal{{ user.id }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-danger" 
+                                                title="Delete User"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#deleteModal{{ user.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- User Details Modal -->
+                                    <div class="modal fade" id="userModal{{ user.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-light">
+                                                    <h5 class="modal-title">
+                                                        <i class="fas fa-user-circle me-2"></i>User Details
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="row mb-4">
+                                                        <div class="col-md-6">
+                                                            <div class="card border-0 bg-light">
+                                                                <div class="card-body">
+                                                                    <h6 class="card-title border-bottom pb-2">Personal Information</h6>
+                                                                    <table class="table table-sm table-borderless mb-0">
+                                                                        <tr>
+                                                                            <th style="width: 35%;">Customer ID:</th>
+                                                                            <td>{{ user.id - 1 }}</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>Full Name:</th>
+                                                                            <td>{{ user.full_name or user.username }}</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>Email:</th>
+                                                                            <td>{{ user.email }}</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>Address:</th>
+                                                                            <td>{{ user.address or 'Not provided' }}</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>PIN Code:</th>
+                                                                            <td>{{ user.pin_code or 'Not provided' }}</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>Phone:</th>
+                                                                            <td>{{ user.phone or 'Not provided' }}</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th>Member Since:</th>
+                                                                            <td>{{ user.created_at }}</td>
+                                                                        </tr>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="card border-0 bg-light">
+                                                                <div class="card-body">
+                                                                    <h6 class="card-title border-bottom pb-2">Booking Statistics</h6>
+                                                                    <div class="row text-center">
+                                                                        <div class="col-md-4">
+                                                                            <div class="p-3">
+                                                                                <h3 class="mb-0">{{ user.active_reservations }}</h3>
+                                                                                <small class="text-muted">Active</small>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-md-4">
+                                                                            <div class="p-3">
+                                                                                <h3 class="mb-0">{{ user.total_bookings }}</h3>
+                                                                                <small class="text-muted">Total</small>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-md-4">
+                                                                            <div class="p-3">
+                                                                                <h3 class="mb-0">${{ user.total_spent }}</h3>
+                                                                                <small class="text-muted">Spent</small>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {% if user.active_reservations > 0 %}
+                                                    <div class="card border-0 bg-light">
+                                                        <div class="card-body">
+                                                            <h6 class="card-title border-bottom pb-2">Current Reservations</h6>
+                                                            <div class="table-responsive">
+                                                                <table class="table table-sm table-striped">
+                                                                    <thead class="table-light">
+                                                                        <tr>
+                                                                            <th>Parking Lot</th>
+                                                                            <th>Spot</th>
+                                                                            <th>Started</th>
+                                                                            <th>Duration</th>
+                                                                            <th>Actions</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {% for reservation in user_reservations[user.id] %}
+                                                                        <tr>
+                                                                            <td>{{ reservation.lot_name }}</td>
+                                                                            <td>{{ reservation.spot_number }}</td>
+                                                                            <td>{{ reservation.parking_time }}</td>
+                                                                            <td>
+                                                                                {% if reservation.duration is defined %}
+                                                                                {{ reservation.duration }}
+                                                                                {% else %}
+                                                                                -
+                                                                                {% endif %}
+                                                                            </td>
+                                                                            <td>
+                                                                                <a href="{{ url_for('admin.view_parking_spots', lot_id=reservation.lot_id) }}" class="btn btn-sm btn-outline-primary">
+                                                                                    <i class="fas fa-eye"></i>
+                                                                                </a>
+                                                                            </td>
+                                                                        </tr>
+                                                                        {% endfor %}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Delete Confirmation Modal -->
+                                    <div class="modal fade" id="deleteModal{{ user.id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-danger text-white">
+                                                    <h5 class="modal-title">
+                                                        <i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete
+                                                    </h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to delete the user "{{ user.full_name or user.username }}" (Customer ID: {{ user.id - 1 }})?</p>
+                                                    <p class="text-danger fw-bold">This action cannot be undone.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <a href="{{ url_for('admin.delete_user', user_id=user.id) }}" 
+                                                       class="btn btn-danger">Delete</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-white py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Showing {{ users|length }} users</span>
+                    <nav aria-label="Users pagination">
+                        <ul class="pagination mb-0">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .avatar-circle {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+    
+    .table th, .table td {
+        padding: 0.75rem;
+        vertical-align: middle;
+    }
+    
+    .text-truncate {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Simple search functionality
+        const searchInput = document.getElementById('userSearchInput');
+        const table = document.getElementById('usersTable');
+        const rows = table.getElementsByTagName('tr');
+        
+        searchInput.addEventListener('keyup', function(e) {
+            const term = searchInput.value.toLowerCase();
+            
+            for (let i = 1; i < rows.length; i++) {
+                let found = false;
+                const cells = rows[i].getElementsByTagName('td');
+                
+                for (let j = 0; j < cells.length; j++) {
+                    const cellText = cells[j].textContent.toLowerCase();
+                    if (cellText.indexOf(term) > -1) {
+                        found = true;
+                        break;
+                    }
+                }
+                
+                rows[i].style.display = found ? '' : 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

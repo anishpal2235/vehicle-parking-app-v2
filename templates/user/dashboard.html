@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="mb-4">Welcome, {{ current_user.username }}!</h2>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Search for Parking</h5>
+                <form action="{{ url_for('user.search_parking') }}" method="get" class="row g-3">
+                    <div class="col-md-9">
+                        <label for="location" class="form-label">Search parking at location/pin code:</label>
+                        <input type="text" class="form-control" id="location" name="location" placeholder="Enter location or pin code" required>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Active Reservations</h5>
+                <h2 class="card-text">{{ active_count }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Bookings</h5>
+                <h2 class="card-text">{{ total_reservations }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Spent</h5>
+                <h2 class="card-text">${{ total_spent }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4 col-sm-6">
+                        <a href="{{ url_for('user.book_spot') }}" class="btn btn-success w-100 py-3 shadow-sm d-flex align-items-center justify-content-center transition-hover">
+                            <i class="fas fa-parking me-2"></i> Book a Spot
+                        </a>
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <a href="{{ url_for('user.view_history') }}" class="btn btn-info w-100 py-3 shadow-sm d-flex align-items-center justify-content-center transition-hover">
+                            <i class="fas fa-history me-2"></i> View History
+                        </a>
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <a href="{{ url_for('user.preferences') }}" class="btn btn-warning w-100 py-3 shadow-sm d-flex align-items-center justify-content-center transition-hover">
+                            <i class="fas fa-cog me-2"></i> Preferences
+                        </a>
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <a href="{{ url_for('user.payment_methods') }}" class="btn btn-primary w-100 py-3 shadow-sm d-flex align-items-center justify-content-center transition-hover">
+                            <i class="fas fa-credit-card me-2"></i> Payment Methods
+                        </a>
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <a href="{{ url_for('user.export_csv') }}" class="btn btn-secondary w-100 py-3 shadow-sm d-flex align-items-center justify-content-center transition-hover">
+                            <i class="fas fa-file-export me-2"></i> Export Data
+                        </a>
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <a href="{{ url_for('user.summary') }}" class="btn btn-dark w-100 py-3 shadow-sm d-flex align-items-center justify-content-center transition-hover">
+                            <i class="fas fa-chart-bar me-2"></i> View Summary
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Active Reservations</h5>
+            </div>
+            <div class="card-body">
+                {% if active_reservations %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Parking Lot</th>
+                                <th>Spot Number</th>
+                                <th>Start Time</th>
+                                <th>Payment</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reservation in active_reservations %}
+                            <tr>
+                                <td>{{ reservation.lot_name }}</td>
+                                <td>{{ reservation.spot_number }}</td>
+                                <td>{{ reservation.parking_time }}</td>
+                                <td>
+                                    {% if reservation.payment_status == 'PAID' %}
+                                        <span class="badge bg-success">Paid</span>
+                                    {% elif reservation.parking_cost and reservation.parking_cost > 0 %}
+                                        <a href="{{ url_for('user.payment', reservation_id=reservation.reservation_id) }}" 
+                                           class="btn btn-sm btn-warning">
+                                            <i class="fas fa-credit-card"></i> Pay ${{ "%.2f"|format(reservation.parking_cost) }}
+                                        </a>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Free</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if reservation.payment_status == 'PAID' %}
+                                    <a href="{{ url_for('user.release_spot', reservation_id=reservation.reservation_id) }}" 
+                                       class="btn btn-sm btn-success">
+                                       <i class="fas fa-check-circle"></i> Complete
+                                    </a>
+                                    {% else %}
+                                    <a href="{{ url_for('user.release_spot', reservation_id=reservation.reservation_id) }}" 
+                                       class="btn btn-sm btn-danger">
+                                       <i class="fas fa-parking"></i> Release Spot
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No active reservations</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Recent History</h5>
+            </div>
+            <div class="card-body">
+                {% if past_reservations %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Location</th>
+                                <th>Vehicle No</th>
+                                <th>Timestamp</th>
+                                <th>Cost</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reservation in past_reservations %}
+                            <tr>
+                                <td>{{ reservation.lot_name }} #{{ reservation.spot_number }}</td>
+                                <td>{{ reservation.vehicle_no or "N/A" }}</td>
+                                <td>{{ reservation.parking_time.strftime('%d %b %Y, %I:%M %p') }}</td>
+                                <td>
+                                    {% if reservation.cost is not none and reservation.cost > 0 %}
+                                        ${{ "%.2f"|format(reservation.cost) }}
+                                    {% elif reservation.cost == 0 %}
+                                        Free
+                                    {% else %}
+                                        $0.00
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if reservation.is_active %}
+                                        {% if reservation.payment_status == 'PAID' %}
+                                        <a href="{{ url_for('user.release_spot', reservation_id=reservation.reservation_id) }}" 
+                                            class="btn btn-sm btn-success">
+                                            <i class="fas fa-check-circle"></i> Complete
+                                        </a>
+                                        {% else %}
+                                        <a href="{{ url_for('user.release_spot', reservation_id=reservation.reservation_id) }}" 
+                                            class="btn btn-sm btn-danger">
+                                            <i class="fas fa-parking"></i> Release Spot
+                                        </a>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-success">Completed</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No past reservations</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12 text-center">
+        <a href="{{ url_for('user.book_spot') }}" class="btn btn-primary btn-lg mr-2">
+            <i class="fas fa-plus"></i> Book a New Spot
+        </a>
+        <a href="{{ url_for('user.summary') }}" class="btn btn-info btn-lg">
+            <i class="fas fa-chart-bar"></i> View Parking Summary
+        </a>
+    </div>
+</div>
+
+<style>
+.transition-hover {
+    transition: all 0.3s ease;
+}
+.transition-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+}
+</style>
+{% endblock %}

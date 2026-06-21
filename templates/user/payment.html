@@ -1,0 +1,529 @@
+{% extends "base.html" %}
+
+{% block title %}Payment - Vehicle Parking App{% endblock %}
+
+{% block head %}
+<style>
+    .payment-card {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .card-icon {
+        font-size: 1.5rem;
+        margin-right: 0.5rem;
+    }
+    .payment-method {
+        margin-bottom: 1.5rem;
+    }
+    .payment-header {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .card-wrapper {
+        margin-bottom: 1.5rem;
+    }
+    .form-check-label {
+        cursor: pointer;
+    }
+    .payment-success-icon {
+        font-size: 4rem;
+        color: #28a745;
+        margin-bottom: 1rem;
+    }
+    #card-errors {
+        color: #dc3545;
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+    }
+    .payment-option {
+        margin-bottom: 1rem;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    .payment-option.active {
+        border-color: #007bff;
+        background-color: #f8f9fa;
+    }
+    .payment-details {
+        margin-top: 1rem;
+    }
+    .hidden {
+        display: none;
+    }
+    .amount-display {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #343a40;
+    }
+    .reservation-summary {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+    }
+    .summary-row:last-child {
+        border-bottom: none;
+    }
+    .summary-total {
+        font-weight: bold;
+        color: #dc3545;
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4">Payment</h1>
+        
+        {% if success %}
+        <!-- Payment Success View -->
+        <div class="card payment-card shadow">
+            <div class="card-body text-center py-5">
+                <div class="payment-success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2 class="mb-3">Payment Successful!</h2>
+                <p>Your payment of <span class="text-success fw-bold">${{ "%.2f"|format(amount|float) }}</span> has been processed successfully.</p>
+                <p class="text-muted mb-4">Transaction ID: {{ transaction_id }}</p>
+                
+                <div class="alert alert-success mb-4">
+                    <i class="fas fa-parking me-2"></i>
+                    Your parking spot has been automatically released and your session marked as complete.
+                </div>
+                
+                <div class="d-grid gap-2 d-md-block">
+                    <a href="{{ url_for('user.dashboard') }}" class="btn btn-primary">Return to Dashboard</a>
+                    <a href="#" onclick="window.print()" class="btn btn-outline-secondary">
+                        <i class="fas fa-print"></i> Print Receipt
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <!-- Payment Form with Multiple Options -->
+        <div class="card payment-card shadow">
+            <div class="card-body">
+                <div class="payment-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-1">Complete your payment</h2>
+                        <p class="text-muted mb-0">Secure payment processing</p>
+                    </div>
+                    <div class="text-end">
+                        <p class="text-muted mb-0">Total amount</p>
+                        <div class="amount-display">${{ "%.2f"|format(amount|float) }}</div>
+                    </div>
+                </div>
+                
+                <!-- Reservation Summary -->
+                <div class="reservation-summary mb-4">
+                    <h5 class="mb-3"><i class="fas fa-receipt me-2"></i>Reservation Summary</h5>
+                    <div class="summary-row">
+                        <span>Parking Lot:</span>
+                        <span>{{ reservation.lot_name }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Spot Number:</span>
+                        <span>#{{ reservation.spot_number }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Duration:</span>
+                        <span>{{ reservation.duration_hours }} hours ({{ ((reservation.release_time or now) - reservation.parking_time).total_seconds()|int // 3600 }} hours {{ (((reservation.release_time or now) - reservation.parking_time).total_seconds()|int % 3600) // 60 }} minutes)</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Hourly Rate:</span>
+                        <span>${{ "%.2f"|format(reservation.hourly_rate|float) }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Start Time:</span>
+                        <span>{{ reservation.parking_time.strftime('%d %b %Y, %I:%M %p') }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>End Time:</span>
+                        <span>{{ (reservation.release_time or now).strftime('%d %b %Y, %I:%M %p') }}</span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <span>Total:</span>
+                        <span>${{ "%.2f"|format(amount|float) }}</span>
+                    </div>
+                </div>
+                
+                <form id="payment-form" method="post" action="{{ url_for('user.process_payment') }}">
+                    <!-- CSRF Token -->
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="amount" value="{{ amount }}">
+                    <input type="hidden" name="reservation_id" value="{{ reservation_id }}">
+                    <input type="hidden" name="saved_method_id" value="">
+                    
+                    <!-- Saved Payment Methods (if any) -->
+                    {% if saved_methods %}
+                    <div class="mb-4">
+                        <h5><i class="fas fa-history me-2"></i>Your Payment Methods</h5>
+                        <div class="list-group mb-3">
+                            {% for method in saved_methods %}
+                                {% if method.payment_type == 'card' %}
+                                <div class="list-group-item list-group-item-action {% if method.is_default %}active{% endif %}" id="saved-method-{{ method.id }}">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="saved_payment_method" 
+                                                id="saved-method-radio-{{ method.id }}" value="{{ method.id }}" 
+                                                {% if method.is_default %}checked{% endif %}>
+                                            <label class="form-check-label" for="saved-method-radio-{{ method.id }}">
+                                                <i class="fab fa-cc-{{ method.card_type|lower }} card-icon"></i>
+                                                •••• {{ method.card_last_four }} | {{ method.card_holder_name }} | Expires: {{ method.card_expiry }}
+                                                {% if method.is_default %}<span class="badge bg-primary ms-2">Default</span>{% endif %}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% elif method.payment_type == 'upi' %}
+                                <div class="list-group-item list-group-item-action {% if method.is_default %}active{% endif %}" id="saved-method-{{ method.id }}">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="saved_payment_method" 
+                                                id="saved-method-radio-{{ method.id }}" value="{{ method.id }}"
+                                                {% if method.is_default %}checked{% endif %}>
+                                            <label class="form-check-label" for="saved-method-radio-{{ method.id }}">
+                                                <i class="fas fa-mobile-alt card-icon text-success"></i>
+                                                UPI ID: {{ method.upi_id }}
+                                                {% if method.is_default %}<span class="badge bg-primary ms-2">Default</span>{% endif %}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                            <div class="list-group-item list-group-item-action" id="new-payment-option">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="saved_payment_method" 
+                                        id="use-new-method" value="new" 
+                                        {% if not has_default_method %}checked{% endif %}>
+                                    <label class="form-check-label" for="use-new-method">
+                                        <i class="fas fa-plus-circle text-primary me-2"></i>
+                                        Use a new payment method
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- New Payment Method Selection -->
+                    <div id="new-payment-methods" class="mb-4 {% if saved_methods and has_default_method %}d-none{% endif %}">
+                        <h5>{% if saved_methods %}New Payment Method{% else %}Select Payment Method{% endif %}</h5>
+                        
+                        <!-- Credit Card Option -->
+                        <div class="payment-option active" id="card-option">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="credit-card" value="card" checked>
+                                <label class="form-check-label" for="credit-card">
+                                    <i class="fab fa-cc-visa card-icon text-primary"></i>
+                                    <i class="fab fa-cc-mastercard card-icon text-danger"></i>
+                                    <i class="fab fa-cc-amex card-icon text-info"></i>
+                                    Credit or Debit Card
+                                </label>
+                            </div>
+                            
+                            <div class="payment-details" id="card-details">
+                                <div class="mb-3">
+                                    <label for="card-number" class="form-label">Card Number</label>
+                                    <input type="text" class="form-control" id="card-number" name="card_number" placeholder="1234 5678 9012 3456" required>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="expiry-date" class="form-label">Expiry Date</label>
+                                        <input type="text" class="form-control" id="expiry-date" name="expiry_date" placeholder="MM/YY" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="cvv" class="form-label">CVV</label>
+                                        <input type="text" class="form-control" id="cvv" name="cvv" placeholder="123" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="name-on-card" class="form-label">Name on Card</label>
+                                    <input type="text" class="form-control" id="name-on-card" name="name_on_card" placeholder="John Smith" required>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="save-card" name="save_payment" value="1">
+                                    <label class="form-check-label" for="save-card">
+                                        Save card for future payments
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- UPI Option -->
+                        <div class="payment-option" id="upi-option">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="upi" value="upi">
+                                <label class="form-check-label" for="upi">
+                                    <i class="fas fa-mobile-alt card-icon text-success"></i>
+                                    UPI Payment
+                                </label>
+                            </div>
+                            
+                            <div class="payment-details hidden" id="upi-details">
+                                <div class="mb-3">
+                                    <label for="upi-id" class="form-label">UPI ID</label>
+                                    <input type="text" class="form-control" id="upi-id" name="upi_id" placeholder="yourname@upi">
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="save-upi" name="save_payment" value="1">
+                                    <label class="form-check-label" for="save-upi">
+                                        Save UPI ID for future payments
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg py-3">
+                            <i class="fas fa-lock me-2"></i>Pay ${{ "%.2f"|format(amount|float) }}
+                        </button>
+                    </div>
+                    
+                    <div class="mt-3 text-center">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt me-1"></i> Your payment information is secure and encrypted
+                        </small>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle payment methods
+        const paymentMethods = document.getElementsByName('payment_method');
+        const cardDetails = document.getElementById('card-details');
+        const upiDetails = document.getElementById('upi-details');
+        const cardOption = document.getElementById('card-option');
+        const upiOption = document.getElementById('upi-option');
+        const paymentForm = document.getElementById('payment-form');
+        
+        // Handle saved payment method selection
+        const savedMethodRadios = document.getElementsByName('saved_payment_method');
+        const newPaymentMethodsSection = document.getElementById('new-payment-methods');
+        const savedMethodIdField = document.querySelector('input[name="saved_method_id"]');
+        
+        // If we have saved payment methods available
+        if (savedMethodRadios && savedMethodRadios.length > 0) {
+            // Initialize: If a default method is checked, update the hidden field
+            savedMethodRadios.forEach(radio => {
+                if (radio.checked && radio.value !== 'new') {
+                    savedMethodIdField.value = radio.value;
+                }
+            });
+            
+            // Add event listeners to radio buttons
+            savedMethodRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'new') {
+                        // Using new payment method
+                        newPaymentMethodsSection.classList.remove('d-none');
+                        savedMethodIdField.value = '';
+                        
+                        // Update required fields based on selected new payment method
+                        const selectedPaymentMethod = document.querySelector('input[name="payment_method"]:checked');
+                        if (selectedPaymentMethod) {
+                            updateRequiredFields(selectedPaymentMethod.value);
+                        }
+                    } else {
+                        // Using saved payment method
+                        newPaymentMethodsSection.classList.add('d-none');
+                        savedMethodIdField.value = this.value;
+                        
+                        // All new payment method fields are not required
+                        document.getElementById('card-number').required = false;
+                        document.getElementById('expiry-date').required = false;
+                        document.getElementById('cvv').required = false;
+                        document.getElementById('name-on-card').required = false;
+                        document.getElementById('upi-id').required = false;
+                    }
+                });
+            });
+        }
+        
+        if (paymentMethods.length > 0) {
+            paymentMethods.forEach(method => {
+                method.addEventListener('change', function() {
+                    updatePaymentMethod(this.value);
+                });
+            });
+        }
+        
+        function updatePaymentMethod(methodValue) {
+            if (methodValue === 'card') {
+                cardDetails.classList.remove('hidden');
+                upiDetails.classList.add('hidden');
+                cardOption.classList.add('active');
+                upiOption.classList.remove('active');
+                
+                updateRequiredFields('card');
+            } else if (methodValue === 'upi') {
+                cardDetails.classList.add('hidden');
+                upiDetails.classList.remove('hidden');
+                cardOption.classList.remove('active');
+                upiOption.classList.add('active');
+                
+                updateRequiredFields('upi');
+            }
+        }
+        
+        function updateRequiredFields(methodType) {
+            // Only set required if using a new payment method
+            const usingNewMethod = !savedMethodIdField.value;
+            
+            if (usingNewMethod) {
+                if (methodType === 'card') {
+                    document.getElementById('card-number').required = true;
+                    document.getElementById('expiry-date').required = true;
+                    document.getElementById('cvv').required = true;
+                    document.getElementById('name-on-card').required = true;
+                    document.getElementById('upi-id').required = false;
+                } else if (methodType === 'upi') {
+                    document.getElementById('card-number').required = false;
+                    document.getElementById('expiry-date').required = false;
+                    document.getElementById('cvv').required = false;
+                    document.getElementById('name-on-card').required = false;
+                    document.getElementById('upi-id').required = true;
+                }
+            }
+        }
+        
+        // Set default card number if empty
+        const cardNumberInput = document.getElementById('card-number');
+        if (cardNumberInput && !cardNumberInput.value) {
+            cardNumberInput.value = '4242 4242 4242 4242'; // Set a test card number
+        }
+        
+        // Set default expiry date if empty
+        const expiryInput = document.getElementById('expiry-date');
+        if (expiryInput && !expiryInput.value) {
+            expiryInput.value = '12/25'; // Set a future expiry date
+        }
+        
+        // Set default CVV if empty
+        const cvvInput = document.getElementById('cvv');
+        if (cvvInput && !cvvInput.value) {
+            cvvInput.value = '123'; // Set a test CVV
+        }
+        
+        // Set default name if empty
+        const nameInput = document.getElementById('name-on-card');
+        if (nameInput && !nameInput.value) {
+            nameInput.value = 'Test User'; // Set a test name
+        }
+        
+        // Add event listeners for card input formatting
+        if (cardNumberInput) {
+            cardNumberInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 16) value = value.slice(0, 16);
+                
+                // Format with spaces
+                const parts = [];
+                for (let i = 0; i < value.length; i += 4) {
+                    parts.push(value.slice(i, i + 4));
+                }
+                
+                e.target.value = parts.join(' ');
+            });
+        }
+        
+        if (expiryInput) {
+            expiryInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 4) value = value.slice(0, 4);
+                
+                if (value.length > 2) {
+                    e.target.value = value.slice(0, 2) + '/' + value.slice(2);
+                } else {
+                    e.target.value = value;
+                }
+            });
+        }
+        
+        if (cvvInput) {
+            cvvInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 3) value = value.slice(0, 3);
+                e.target.value = value;
+            });
+        }
+        
+        // Add form submit event listener to ensure proper validation
+        if (paymentForm) {
+            paymentForm.addEventListener('submit', function(e) {
+                const useNewMethod = !savedMethodIdField.value;
+                
+                if (useNewMethod) {
+                    const selectedPaymentMethod = document.querySelector('input[name="payment_method"]:checked');
+                    if (!selectedPaymentMethod) {
+                        e.preventDefault();
+                        alert('Please select a payment method');
+                        return;
+                    }
+                    
+                    if (selectedPaymentMethod.value === 'card') {
+                        // Validate card fields
+                        if (!cardNumberInput.value || cardNumberInput.value.replace(/\s/g, '').length < 16) {
+                            e.preventDefault();
+                            alert('Please enter a valid card number');
+                            return;
+                        }
+                        
+                        if (!expiryInput.value || !expiryInput.value.includes('/')) {
+                            e.preventDefault();
+                            alert('Please enter a valid expiry date (MM/YY)');
+                            return;
+                        }
+                        
+                        if (!cvvInput.value || cvvInput.value.length < 3) {
+                            e.preventDefault();
+                            alert('Please enter a valid CVV');
+                            return;
+                        }
+                        
+                        if (!nameInput.value) {
+                            e.preventDefault();
+                            alert('Please enter the name on the card');
+                            return;
+                        }
+                    } else if (selectedPaymentMethod.value === 'upi') {
+                        // Validate UPI ID
+                        const upiInput = document.getElementById('upi-id');
+                        if (!upiInput.value || !upiInput.value.includes('@')) {
+                            e.preventDefault();
+                            alert('Please enter a valid UPI ID');
+                            return;
+                        }
+                    }
+                }
+                
+                // All validations passed, form will submit
+                console.log('Payment form validation passed, submitting...');
+            });
+        }
+    });
+</script>
+{% endblock %} 

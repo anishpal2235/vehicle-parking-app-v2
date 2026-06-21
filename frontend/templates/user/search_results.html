@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Parking Lots at {{ search_term }}</h2>
+            <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    {% if lots %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Address</th>
+                                <th>Availability</th>
+                                <th>Price/Hour</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lot in lots %}
+                            <tr>
+                                <td>{{ lot.id }}</td>
+                                <td>{{ lot.address }}</td>
+                                <td>{{ lot.available_spots }} / {{ lot.maximum_number_of_spots }}</td>
+                                <td>${{ lot.price }}</td>
+                                <td>
+                                    {% if lot.available_spots > 0 %}
+                                    <a href="{{ url_for('user.book_form', lot_id=lot.id) }}" class="btn btn-primary btn-sm">Book</a>
+                                    {% else %}
+                                    <button class="btn btn-secondary btn-sm" disabled>Full</button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No parking lots found for "{{ search_term }}". Please try a different location or pin code.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

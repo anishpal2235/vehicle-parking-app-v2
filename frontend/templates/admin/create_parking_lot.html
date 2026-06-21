@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if lot else 'Create' }} Parking Lot{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>{{ 'Edit' if lot else 'Create' }} Parking Lot</h2>
+            <a href="{{ url_for('admin.parking_lots') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Lots
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.create_parking_lot') if not lot else url_for('admin.edit_parking_lot', lot_id=lot.id) }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Parking Lot Name</label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               value="{{ lot.name if lot else '' }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="prime_location_name" class="form-label">Location Name</label>
+                        <input type="text" class="form-control" id="prime_location_name" name="prime_location_name"
+                               value="{{ lot.prime_location_name if lot else '' }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Price per Hour ($)</label>
+                        <input type="number" class="form-control" id="price" name="price" step="0.01" min="0"
+                               value="{{ lot.price if lot else '' }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea class="form-control" id="address" name="address" rows="3" required>{{ lot.address if lot else '' }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="pin_code" class="form-label">PIN Code</label>
+                        <input type="text" class="form-control" id="pin_code" name="pin_code"
+                               value="{{ lot.pin_code if lot else '' }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="max_spots" class="form-label">Maximum Number of Spots</label>
+                        <input type="number" class="form-control" id="max_spots" name="max_spots" min="1"
+                               value="{{ lot.maximum_number_of_spots if lot else '' }}" required>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            {{ 'Update' if lot else 'Create' }} Parking Lot
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Summary{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="mb-4">Admin Summary</h2>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <!-- Revenue by Lot Pie Chart -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Revenue by Parking Lot</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="revenuePieChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spot Status Doughnut Chart -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Overall Spot Status</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="spotStatusChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Free Spots Per Lot Bar Chart -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Free Spots Per Parking Lot</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="freeSpotsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booked Spots Per Lot Bar Chart -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Booked Spots Per Parking Lot</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="bookedSpotsChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Function to generate random colors for charts
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    // 1. Revenue Pie Chart
+    const revenueCtx = document.getElementById('revenuePieChart').getContext('2d');
+    const revenueLabels = {{ lot_names|tojson }};
+    const revenueData = {{ lot_revenues|tojson }};
+    const revenueBackgroundColors = revenueLabels.map(() => getRandomColor());
+
+    new Chart(revenueCtx, {
+        type: 'pie',
+        data: {
+            labels: revenueLabels,
+            datasets: [{
+                label: 'Total Revenue ($)',
+                data: revenueData,
+                backgroundColor: revenueBackgroundColors,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            animation: {
+                animateRotate: true,
+                animateScale: true,
+                duration: 2000
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed !== null) {
+                                label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed);
+                            }
+                            const percentage = Math.round((context.parsed / context.dataset.data.reduce((a, b) => a + b, 0)) * 100);
+                            return [label, `${percentage}% of total revenue`];
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // 2. Spot Status Doughnut Chart
+    const statusCtx = document.getElementById('spotStatusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ spot_status_labels|tojson }},
+            datasets: [{
+                label: 'Number of Spots',
+                data: {{ spot_status_data|tojson }},
+                backgroundColor: [
+                    'rgb(40, 167, 69)', // Success color for Available
+                    'rgb(220, 53, 69)'  // Danger color for Occupied
+                ],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            animation: {
+                animateRotate: true,
+                animateScale: true,
+                duration: 1500
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((context.parsed / total) * 100);
+                            return [`Spots: ${context.parsed}`, `${percentage}% of total spots`];
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // 3. Free Spots Per Lot Bar Chart
+    const freeSpotsCtx = document.getElementById('freeSpotsChart').getContext('2d');
+    new Chart(freeSpotsCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ all_lot_names|tojson }},
+            datasets: [{
+                label: 'Available Spots',
+                data: {{ free_spots_per_lot|tojson }},
+                backgroundColor: 'rgba(40, 167, 69, 0.7)', // Success color
+                borderColor: 'rgb(40, 167, 69)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            animation: {
+                duration: 1500,
+                delay: function(context) {
+                    return context.dataIndex * 100;
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            return `Available spots: ${context.parsed.y}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // 4. Booked Spots Per Lot Bar Chart
+    const bookedSpotsCtx = document.getElementById('bookedSpotsChart').getContext('2d');
+    new Chart(bookedSpotsCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ all_lot_names|tojson }},
+            datasets: [{
+                label: 'Occupied Spots',
+                data: {{ booked_spots_per_lot|tojson }},
+                backgroundColor: 'rgba(220, 53, 69, 0.7)', // Danger color
+                borderColor: 'rgb(220, 53, 69)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            animation: {
+                duration: 1500,
+                delay: function(context) {
+                    return context.dataIndex * 100;
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            return `Occupied spots: ${context.parsed.y}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %} 

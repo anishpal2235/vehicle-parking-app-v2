@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Booking History{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Booking History</h2>
+            <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                {% if booking_history %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Spot Number</th>
+                                <th>Parking Lot</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Duration</th>
+                                <th>Cost</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in booking_history %}
+                            <tr>
+                                <td>{{ booking.spot.spot_number }}</td>
+                                <td>{{ booking.spot.parking_lot.name }}</td>
+                                <td>{{ booking.start_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>{{ booking.end_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>{{ booking.duration }} hours</td>
+                                <td>${{ booking.cost }}</td>
+                                <td>
+                                    {% if booking.status == 'completed' %}
+                                    <span class="badge bg-success">Completed</span>
+                                    {% elif booking.status == 'cancelled' %}
+                                    <span class="badge bg-danger">Cancelled</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#historyModal{{ booking.id }}" aria-label="View booking history details">
+                                        <i class="fas fa-info-circle"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <!-- Booking History Details Modal -->
+                            <div class="modal fade" id="historyModal{{ booking.id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Booking History Details</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p><strong>Spot Number:</strong> {{ booking.spot.spot_number }}</p>
+                                            <p><strong>Parking Lot:</strong> {{ booking.spot.parking_lot.name }}</p>
+                                            <p><strong>Location:</strong> {{ booking.spot.parking_lot.prime_location_name }}</p>
+                                            <p><strong>Start Time:</strong> {{ booking.start_time.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                                            <p><strong>End Time:</strong> {{ booking.end_time.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                                            <p><strong>Duration:</strong> {{ booking.duration }} hours</p>
+                                            <p><strong>Cost:</strong> ${{ booking.cost }}</p>
+                                            <p><strong>Status:</strong> 
+                                                {% if booking.status == 'completed' %}
+                                                <span class="badge bg-success">Completed</span>
+                                                {% elif booking.status == 'cancelled' %}
+                                                <span class="badge bg-danger">Cancelled</span>
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> You don't have any booking history.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

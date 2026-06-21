@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Release Parking Spot{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="mb-4">Release the parking spot</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5>Parking Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Spot_ID:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ lot.name }} #{{ spot.spot_number }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Vehicle Number:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ current_user.vehicle_no or 'N/A' }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Parking Time:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ reservation.parking_timestamp.strftime('%d %b %Y, %I:%M %p') }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Releasing Time:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ now.strftime('%d %b %Y, %I:%M %p') }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Duration:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ "%.2f"|format(duration) }} hours
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Total Cost:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        <span class="text-danger fw-bold">${{ "%.2f"|format(estimated_cost) }}</span>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Location:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ lot.address }}, {{ lot.prime_location_name }}, {{ lot.pin_code }}
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <form method="POST" action="{{ url_for('user.release_spot', reservation_id=reservation.id) }}" class="d-flex justify-content-center gap-3">
+                            <button type="submit" class="btn btn-danger btn-lg px-5">
+                                <i class="fas fa-sign-out-alt"></i> Release
+                            </button>
+                            <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary btn-lg px-5">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

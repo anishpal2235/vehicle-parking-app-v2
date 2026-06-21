@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}User Preferences{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">User Preferences</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('user.preferences') }}">
+                        <!-- Notification Preferences -->
+                        <div class="form-group mb-4">
+                            <h5>Notification Preferences</h5>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="notification_preference" id="notify_email" value="email" {% if current_user.notification_preference == 'email' %}checked{% endif %}>
+                                <label class="form-check-label" for="notify_email">
+                                    Email Notifications
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="notification_preference" id="notify_gchat" value="gchat" {% if current_user.notification_preference == 'gchat' %}checked{% endif %}>
+                                <label class="form-check-label" for="notify_gchat">
+                                    Google Chat Notifications
+                                </label>
+                            </div>
+                            
+                            <!-- Google Chat Email (shown only if Google Chat is selected) -->
+                            <div id="gchat_email_group" class="form-group mt-3" style="display: {% if current_user.notification_preference == 'gchat' %}block{% else %}none{% endif %};">
+                                <label for="gchat_email">Google Chat Email</label>
+                                <input type="email" class="form-control" id="gchat_email" name="gchat_email" value="{{ current_user.gchat_email or '' }}" placeholder="Enter your Google Chat email">
+                                <small class="form-text text-muted">This is the email address associated with your Google Chat account.</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Reminder Time -->
+                        <div class="form-group mb-4">
+                            <h5>Daily Reminder Time</h5>
+                            <label for="reminder_time">When would you like to receive daily reminders?</label>
+                            <input type="time" class="form-control" id="reminder_time" name="reminder_time" value="{{ current_user.reminder_time or '18:00' }}">
+                            <small class="form-text text-muted">Set the time when you want to receive daily parking reminders.</small>
+                        </div>
+                        
+                        <!-- Report Format -->
+                        <div class="form-group mb-4">
+                            <h5>Monthly Report Format</h5>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="report_format" id="format_html" value="html" {% if current_user.report_format == 'html' %}checked{% endif %}>
+                                <label class="form-check-label" for="format_html">
+                                    HTML Report (viewable in email)
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="report_format" id="format_pdf" value="pdf" {% if current_user.report_format == 'pdf' %}checked{% endif %}>
+                                <label class="form-check-label" for="format_pdf">
+                                    PDF Report (downloadable attachment)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Save Preferences</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // Show/hide Google Chat email field based on notification preference
+    document.querySelectorAll('input[name="notification_preference"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            var gchatEmailGroup = document.getElementById('gchat_email_group');
+            if (this.value === 'gchat') {
+                gchatEmailGroup.style.display = 'block';
+            } else {
+                gchatEmailGroup.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %} 

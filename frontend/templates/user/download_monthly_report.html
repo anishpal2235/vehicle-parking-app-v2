@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Download Monthly Report{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-file-download me-2"></i>
+                        Download Monthly Activity Report
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Current Preference:</strong> Your reports will be generated in <strong>{{ current_user.report_format.upper() }}</strong> format by default.
+                        You can override this for this download below.
+                    </div>
+
+                    <form method="POST" action="{{ url_for('user.download_monthly_report') }}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="report_period" class="form-label">
+                                        <i class="fas fa-calendar me-2"></i>Report Period
+                                    </label>
+                                    <select class="form-select" id="report_period" name="report_period" required>
+                                        <option value="current">Current Month ({{ current_month }})</option>
+                                        <option value="previous">Previous Month ({{ previous_month }})</option>
+                                    </select>
+                                    <div class="form-text">
+                                        Choose which month's data to include in your report.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="report_format" class="form-label">
+                                        <i class="fas fa-file me-2"></i>Report Format
+                                    </label>
+                                    <select class="form-select" id="report_format" name="report_format" required>
+                                        <option value="html" {% if current_user.report_format == 'html' %}selected{% endif %}>HTML (Web-friendly)</option>
+                                        <option value="pdf" {% if current_user.report_format == 'pdf' %}selected{% endif %}>PDF (Printable)</option>
+                                    </select>
+                                    <div class="form-text">
+                                        Choose your preferred format for this download.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="fas fa-chart-bar me-2"></i>What's Included in Your Report
+                                        </h6>
+                                        <ul class="list-unstyled mb-0">
+                                            <li><i class="fas fa-check text-success me-2"></i>Total parking sessions</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Total amount spent</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Most frequently used parking lot</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Detailed reservation history</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Payment status summary</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Monthly statistics and trends</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary w-100">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-download me-2"></i>Download Report
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card border-info">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0">
+                                <i class="fas fa-file-code me-2"></i>HTML Format
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled mb-0">
+                                <li><i class="fas fa-plus text-info me-2"></i>Web-friendly format</li>
+                                <li><i class="fas fa-plus text-info me-2"></i>Can be opened in any browser</li>
+                                <li><i class="fas fa-plus text-info me-2"></i>Interactive elements</li>
+                                <li><i class="fas fa-plus text-info me-2"></i>Smaller file size</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h6 class="mb-0">
+                                <i class="fas fa-file-pdf me-2"></i>PDF Format
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled mb-0">
+                                <li><i class="fas fa-plus text-warning me-2"></i>Professional format</li>
+                                <li><i class="fas fa-plus text-warning me-2"></i>Perfect for printing</li>
+                                <li><i class="fas fa-plus text-warning me-2"></i>Consistent layout</li>
+                                <li><i class="fas fa-plus text-warning me-2"></i>Easy to share</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+.card:hover {
+    transform: translateY(-2px);
+}
+.btn {
+    transition: all 0.3s ease;
+}
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+</style>
+{% endblock %}

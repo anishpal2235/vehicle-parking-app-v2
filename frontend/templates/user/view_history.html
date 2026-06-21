@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Parking History{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="mb-4">Parking History</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Your Parking Records</h5>
+            </div>
+            <div class="card-body">
+                {% if history %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Parking Lot</th>
+                                <th>Spot Number</th>
+                                <th>Vehicle Number</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Duration</th>
+                                <th>Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reservation in history %}
+                            <tr>
+                                <td>{{ reservation.lot_name }}</td>
+                                <td>{{ reservation.spot_number }}</td>
+                                <td>{{ reservation.vehicle_no }}</td>
+                                <td>{{ reservation.parking_time|format_datetime }}</td>
+                                <td>{{ reservation.leaving_time|format_datetime }}</td>
+                                <td>{{ reservation.duration }} hours</td>
+                                <td>${{ "%.2f"|format(reservation.cost) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    You haven't made any parking reservations yet.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

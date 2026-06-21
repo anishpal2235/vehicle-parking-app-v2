@@ -1,0 +1,5 @@
+reservation_id,parking_lot,spot_number,vehicle_number,parking_time,leaving_time,duration,cost,status
+1,Parknest,2,MP04XC5010,2025-05-06 18:29:26,2025-05-06 23:14:46,4h 45m,14.267301258333333,Completed
+2,Parknest,5,MP04XC5444,2025-05-06 18:29:43,2025-05-06 18:29:52,0m,0.0069772083333333335,Completed
+7,Parknest,2,MP04XC5444,2025-05-06 23:15:28,2025-05-06 23:37:55,22m,1.1230293183333333,Completed
+8,Parknest,1,MP04XC5444,2025-05-06 23:38:10,Still Active,20m,0,Active

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Vehicle Parking App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #212529;
+            text-align: center;
+            padding: 2rem 1rem;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        h1 {
+            color: #343a40;
+            margin-bottom: 1rem;
+        }
+        p {
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        .icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            color: #6c757d;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+        }
+        .btn:hover {
+            background-color: #0069d9;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #121212;
+                color: #e0e0e0;
+            }
+            .card {
+                background-color: #1e1e1e;
+            }
+            h1 {
+                color: #f8f9fa;
+            }
+            .icon {
+                color: #adb5bd;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="icon">📶</div>
+            <h1>You're Offline</h1>
+            <p>It seems you're not connected to the internet. The Parking App requires an active internet connection for most features.</p>
+            <p>Please check your connection and try again.</p>
+            <button class="btn" onclick="retryConnection()">Try Again</button>
+        </div>
+    </div>
+    <script>
+        function retryConnection() {
+            // Try to reload the page
+            window.location.reload();
+            
+            // If we're still offline after 2 seconds, show a message
+            setTimeout(() => {
+                if (!navigator.onLine) {
+                    alert("Still offline. Please check your internet connection.");
+                }
+            }, 2000);
+        }
+        
+        // If we come back online, automatically reload the page
+        window.addEventListener('online', () => {
+            window.location.reload();
+        });
+    </script>
+</body>
+</html> 

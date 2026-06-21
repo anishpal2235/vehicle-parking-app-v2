@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Export Parking Data{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Export Parking Data</h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead">
+                        Export all your parking data to a CSV file for your records.
+                    </p>
+                    
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-info-circle"></i> What's included in the export:</h5>
+                        <ul>
+                            <li>All your parking reservations</li>
+                            <li>Parking lot and spot details</li>
+                            <li>Timestamps for entry and exit</li>
+                            <li>Duration and cost information</li>
+                            <li>Vehicle information</li>
+                        </ul>
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('user.export_csv') }}">
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-file-export"></i> Generate CSV Export
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-4">
+                        <h5>What happens next?</h5>
+                        <ol>
+                            <li>Click the button above to request your data export</li>
+                            <li>Our system will prepare your CSV file</li>
+                            <li>You'll receive an email with a download link when it's ready</li>
+                            <li>The download link will be valid for 24 hours</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
