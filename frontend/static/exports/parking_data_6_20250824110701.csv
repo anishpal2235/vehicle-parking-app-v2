@@ -1,2 +1,0 @@
-reservation_id,parking_lot,spot_number,vehicle_number,parking_time,leaving_time,duration,cost,status
-1,Bombay Parking,3,BB25SS2020,2025-08-24 11:03:50,2025-08-24 11:06:40,2m,0.28312793,Completed

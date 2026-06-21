@@ -1,0 +1,64 @@
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Packaging and build output
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Environment variables and local secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Flask instance data and local databases
+instance/
+backend/instance/
+*.db
+*.db-*
+*.db.*
+*.sqlite
+*.sqlite3
+
+# Generated reports and exports
+static/exports/
+static/reports/
+frontend/static/exports/
+frontend/static/reports/
+
+# Logs and process files
+*.log
+*.pid
+*.seed
+
+# Editors and IDEs
+.vscode/
+.idea/
+*.code-workspace
+*.swp
+*.swo
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
